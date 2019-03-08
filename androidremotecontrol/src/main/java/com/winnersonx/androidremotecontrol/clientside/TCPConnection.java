@@ -24,20 +24,20 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
     private CommandListener commandListener;
     private int reconnectDelay;
 
+
+    String str;
+
+    public void sendString(final String value) {
+        sendString(value, null, 0);
+    }
+
     public TCPConnection(String host, int port, TCPConnectionListener tcpConnectionListener, CommandListener commandListener) {
         this.reconnectDelay = 2000;
         this.host = host;
         this.port = port;
         this.tcpConnectionListener = tcpConnectionListener;
         this.commandListener = commandListener;
-    }
-
-    public void initiateConnection() {
         executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    public void sendString(final String value) {
-        sendString(value, null, 0);
     }
 
     public void sendString(final String value, View view, int commandDelay) {
@@ -49,7 +49,7 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
             id = view.getId();
         Sender sender;
         sender = new Sender(socket, out, tcpConnectionListener, commandListener, TCPConnection.this, value, id, commandDelay);
-            sender.send();
+        sender.send();
     }
 
     public void disconnect() {
@@ -69,7 +69,7 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
                 public void run() {
                     tcpConnectionListener.onDisconnect(TCPConnection.this);
                 }
-            }, 2000);
+            }, reconnectDelay);
             this.tcpConnectionListener.onException(this, var2);
             var2.printStackTrace();
         }
@@ -84,9 +84,9 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), Charset.forName("UTF-8")));
             tcpConnectionListener.onConnectionReady(TCPConnection.this);
             while (!isCancelled()) {
-                String str= in.readLine();
-                if (str.length()>0)
-                    tcpConnectionListener.onMessageReceived(TCPConnection.this, str);
+                str = in.readLine();
+                if (str.length() > 0)
+                    publishProgress();
 
             }
         } catch (Exception e) {
@@ -94,6 +94,12 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
             disconnect();
         }
         return null;
+    }
+
+    @Override
+    protected void onProgressUpdate(String... values) {
+        super.onProgressUpdate(values);
+        tcpConnectionListener.onMessageReceived(TCPConnection.this, str);
     }
 
     @Override
