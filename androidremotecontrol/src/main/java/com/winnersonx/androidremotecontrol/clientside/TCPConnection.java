@@ -44,7 +44,6 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
         if (socket == null || socket.isClosed())
             return;
         int id = 0;
-        int del = 0;
         if (view != null)
             id = view.getId();
         Sender sender;
