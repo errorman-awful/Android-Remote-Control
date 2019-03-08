@@ -8,8 +8,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.Charset;
@@ -46,14 +44,16 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
         if (socket == null || socket.isClosed())
             return;
         Sender sender;
-        if (view == null)
+        if (view == null) {
             sender = new Sender(socket, out, tcpConnectionListener, commandListener, TCPConnection.this, value, 0);
-        else
+            sender.send();
+        } else {
             sender = new Sender(socket, out, tcpConnectionListener, commandListener, TCPConnection.this, value, view.getId());
-        sender.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            sender.send();
+        }
     }
 
-    private void disconnect() {
+    public void disconnect() {
         cancel(true);
         try {
             if (socket != null)
