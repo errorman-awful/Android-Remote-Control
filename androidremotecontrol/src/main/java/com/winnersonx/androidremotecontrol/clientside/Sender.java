@@ -13,10 +13,10 @@ class Sender extends AsyncTask<Void, String, Void> {
     private int commandDelay;
 
     public Sender(Socket socket, BufferedWriter oos, TCPConnectionListener tcpConnectionListener, CommandListener commandListener, TCPConnection tcpConnection, String msg) {
-        this(socket, oos, tcpConnectionListener, commandListener, tcpConnection, msg, 0);
+        this(socket, oos, tcpConnectionListener, commandListener, tcpConnection, msg, 0, 0);
     }
 
-    public Sender(Socket socket, BufferedWriter oos, TCPConnectionListener tcpConnectionListener, CommandListener commandListener, TCPConnection tcpConnection, String msg, int id) {
+    public Sender(Socket socket, BufferedWriter oos, TCPConnectionListener tcpConnectionListener, CommandListener commandListener, TCPConnection tcpConnection, String msg, int id, int commandDelay) {
         this.oos = oos;
         this.tcpConnectionListener = tcpConnectionListener;
         this.commandListener = commandListener;
@@ -25,7 +25,7 @@ class Sender extends AsyncTask<Void, String, Void> {
         this.socket = socket;
         this.id = id;
         this.endLineSymbol = "\n";
-        commandDelay = 0;
+        this.commandDelay = commandDelay;
     }
 
     private Socket socket;
@@ -47,8 +47,7 @@ class Sender extends AsyncTask<Void, String, Void> {
                     return null;
                 oos.write(msg + "\n");
                 oos.flush();
-                if (id != 0)
-                    publishProgress(msg);
+                publishProgress(msg);
             } else {
                 if (socket != null)
                     socket.close();
@@ -71,7 +70,14 @@ class Sender extends AsyncTask<Void, String, Void> {
     @Override
     protected void onProgressUpdate(String... values) {
         super.onProgressUpdate(values);
-        commandListener.onCommand(msg, id, commandDelay);
+        if (id == 0 && commandDelay == 0)
+            commandListener.onCommand(msg);
+        else if (id == 0)
+            commandListener.onCommand(msg, commandDelay);
+        else if (commandDelay == 0)
+            commandListener.onCommand(msg, id);
+        else commandListener.onCommand(msg, id, commandDelay);
+
     }
 
     public CommandListener getCommandListener() {

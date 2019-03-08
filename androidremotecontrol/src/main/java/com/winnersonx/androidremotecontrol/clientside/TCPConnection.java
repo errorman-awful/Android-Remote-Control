@@ -37,20 +37,19 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
     }
 
     public void sendString(final String value) {
-        sendString(value, null);
+        sendString(value, null, 0);
     }
 
-    public void sendString(final String value, View view) {
+    public void sendString(final String value, View view, int commandDelay) {
         if (socket == null || socket.isClosed())
             return;
+        int id = 0;
+        int del = 0;
+        if (view != null)
+            id = view.getId();
         Sender sender;
-        if (view == null) {
-            sender = new Sender(socket, out, tcpConnectionListener, commandListener, TCPConnection.this, value, 0);
+        sender = new Sender(socket, out, tcpConnectionListener, commandListener, TCPConnection.this, value, id, commandDelay);
             sender.send();
-        } else {
-            sender = new Sender(socket, out, tcpConnectionListener, commandListener, TCPConnection.this, value, view.getId());
-            sender.send();
-        }
     }
 
     public void disconnect() {
