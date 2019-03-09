@@ -80,75 +80,11 @@ class Sender extends AsyncTask<Void, String, Void> {
 
     }
 
-    public CommandListener getCommandListener() {
-        return commandListener;
-    }
-
-    public void setCommandListener(CommandListener commandListener) {
-        this.commandListener = commandListener;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public Socket getSocket() {
-        return socket;
-    }
-
-    public void setSocket(Socket socket) {
-        this.socket = socket;
-    }
-
-    public BufferedWriter getOos() {
-        return oos;
-    }
-
-    public void setOos(BufferedWriter oos) {
-        this.oos = oos;
-    }
-
-    public TCPConnectionListener getTcpConnectionListener() {
-        return tcpConnectionListener;
-    }
-
-    public void setTcpConnectionListener(TCPConnectionListener tcpConnectionListener) {
-        this.tcpConnectionListener = tcpConnectionListener;
-    }
-
-    public TCPConnection getTcpConnection() {
-        return tcpConnection;
-    }
-
-    public void setTcpConnection(TCPConnection tcpConnection) {
-        this.tcpConnection = tcpConnection;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
     public String getEndLineSymbol() {
         return endLineSymbol;
     }
 
     public void setEndLineSymbol(String endLineSymbol) {
         this.endLineSymbol = endLineSymbol;
-    }
-
-    public int getCommandDelay() {
-        return commandDelay;
-    }
-
-    public void setCommandDelay(int commandDelay) {
-        this.commandDelay = commandDelay;
     }
 }

@@ -14,6 +14,7 @@ import java.nio.charset.Charset;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
 public class TCPConnection extends AsyncTask<Void, String, Void> {
     private String host;
     private int port;
@@ -23,13 +24,7 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
     private BufferedWriter out;
     private CommandListener commandListener;
     private int reconnectDelay;
-
-
-    String str;
-
-    public void sendString(final String value) {
-        sendString(value, null, 0);
-    }
+    private String str;
 
     public TCPConnection(String host, int port, TCPConnectionListener tcpConnectionListener, CommandListener commandListener) {
         this.reconnectDelay = 2000;
@@ -40,7 +35,34 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
         executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
-    public void sendString(final String value, View view, int commandDelay) {
+    /**
+     * Sends string to the server
+     *
+     * @param value         The string that will be send to the server
+     * @param endLineSymbol The symbol that indicated end of line
+     */
+    public void sendString(final String value, String endLineSymbol) {
+        sendString(value, null, 0, endLineSymbol);
+    }
+
+    /**
+     * Sends string to the server
+     *
+     * @param value The string that will be send to the server
+     */
+    public void sendString(final String value) {
+        sendString(value, null, 0, "\n");
+    }
+
+    /**
+     * Sends string to the server
+     *
+     * @param value         The string that will be send to the server
+     * @param view          The view that caused the dispatch
+     * @param commandDelay  "Optional parameter, that can be used in onCommand callback"
+     * @param endLineSymbol The symbol that indicated end of line,
+     */
+    public void sendString(final String value, View view, int commandDelay, String endLineSymbol) {
         if (socket == null || socket.isClosed())
             return;
         int id = 0;
@@ -48,20 +70,34 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
             id = view.getId();
         Sender sender;
         sender = new Sender(socket, out, tcpConnectionListener, commandListener, TCPConnection.this, value, id, commandDelay);
+        sender.setEndLineSymbol(endLineSymbol);
         sender.send();
     }
 
+    /**
+     * Disconnect client from server with a specified reconnectDelay parameter by command(setReconnectDelay)
+     */
     public void disconnect() {
+        disconnect(reconnectDelay);
+    }
+
+    /**
+     * Disconnect client from server with a  reconnectDelay delay in ms
+     *
+     * @param reconnectDelay delay in ms after that the "onDisconnect" callback will be dispatched
+     */
+    public void disconnect(int reconnectDelay) {
         cancel(true);
         try {
-            if (socket != null)
+            if (socket != null) {
                 this.socket.close();
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    tcpConnectionListener.onDisconnect(TCPConnection.this);
-                }
-            }, reconnectDelay);
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        tcpConnectionListener.onDisconnect(TCPConnection.this);
+                    }
+                }, reconnectDelay);
+            }
         } catch (IOException var2) {
             new Timer().schedule(new TimerTask() {
                 @Override
@@ -74,6 +110,7 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
         }
 
     }
+
 
     @Override
     protected Void doInBackground(Void... voids) {
@@ -107,67 +144,83 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
         disconnect();
     }
 
+    /**
+     * @return host name of current tcp connection
+     */
     //region GETTERS_SETTERS
     public String getHost() {
         return host;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
+    /**
+     * @return port of current tcp connection
+     */
     public int getPort() {
         return port;
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
+    /**
+     * @return socket of current tcp connection
+     */
     public Socket getSocket() {
         return socket;
     }
 
-    public void setSocket(Socket socket) {
-        this.socket = socket;
-    }
-
+    /**
+     * @return tcpConnectionListener
+     */
     public TCPConnectionListener getTcpConnectionListener() {
         return tcpConnectionListener;
     }
 
+    /**
+     * Sets the tcpConnectionListener interface
+     */
     public void setTcpConnectionListener(TCPConnectionListener tcpConnectionListener) {
         this.tcpConnectionListener = tcpConnectionListener;
     }
 
+    /**
+     * @return bufferedReader of tcp connection
+     */
     public BufferedReader getIn() {
         return in;
     }
 
-    public void setIn(BufferedReader in) {
-        this.in = in;
-    }
-
+    /**
+     * @return bufferedWriter of tcp connection
+     */
     public BufferedWriter getOut() {
         return out;
     }
 
-    public void setOut(BufferedWriter out) {
-        this.out = out;
-    }
-
+    /**
+     * @return commandListener interface
+     */
     public CommandListener getCommandListener() {
         return commandListener;
     }
 
+    /**
+     * Sets the commandListener interface
+     */
     public void setCommandListener(CommandListener commandListener) {
         this.commandListener = commandListener;
     }
 
+    /**
+     * @return reconnect delay in ms
+     */
     public int getReconnectDelay() {
         return reconnectDelay;
     }
 
+    /**
+     * Sets the delay of "onDisconnect" callback with a real disconnect,
+     * 0 means "onDisconnect" calls immediately after real disconnect
+     *
+     * @param reconnectDelay Delay in ms
+     */
     public void setReconnectDelay(int reconnectDelay) {
         this.reconnectDelay = reconnectDelay;
     }
