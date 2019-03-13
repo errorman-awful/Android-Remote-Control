@@ -94,7 +94,7 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
                 new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        tcpConnectionListener.onDisconnect(TCPConnection.this);
+                        publishProgress("disconnect");
                     }
                 }, reconnectDelay);
             }
@@ -102,7 +102,7 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    tcpConnectionListener.onDisconnect(TCPConnection.this);
+                    publishProgress("disconnect");
                 }
             }, reconnectDelay);
             this.tcpConnectionListener.onException(this, var2);
@@ -122,7 +122,7 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
             while (!isCancelled()) {
                 str = in.readLine();
                 if (str.length() > 0)
-                    publishProgress();
+                    publishProgress("message");
 
             }
         } catch (Exception e) {
@@ -135,7 +135,15 @@ public class TCPConnection extends AsyncTask<Void, String, Void> {
     @Override
     protected void onProgressUpdate(String... values) {
         super.onProgressUpdate(values);
-        tcpConnectionListener.onMessageReceived(TCPConnection.this, str);
+        switch (values[0]) {
+            case "message":
+                tcpConnectionListener.onMessageReceived(TCPConnection.this, str);
+                break;
+            case "disconnect":
+                tcpConnectionListener.onDisconnect(TCPConnection.this);
+                break;
+        }
+
     }
 
     @Override
